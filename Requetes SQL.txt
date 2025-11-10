@@ -1,0 +1,63 @@
+Révisions APP10 :
+
+Liste de tous les livres triés par titre :
+SELECT * FROM LIVRE ORDER BY TITRE;
+
+Nombre de livres dont le titre contient le mot "the" :
+SELECT COUNT(titre) FROM livre WHERE LOWER(titre) LIKE '% the %' OR LOWER(titre) LIKE 'the %' OR LOWER(titre) LIKE '% the' OR LOWER(titre) =  'the';
+(Note : La fonction LOWER() permet de chercher dans le titre sans compter la casse")
+
+Noms et prénoms de tous les usagers ayant plus de 60 ans :
+SELECT NOM, PRENOM FROM USAGER WHERE TO_CHAR(SYSDATE, 'YYYY') - ANNEE_NAISSANCE > 60;
+ou
+SELECT NOM, PRENOM FROM USAGER WHERE EXTRACT(YEAR FROM SYSDATE) - ANNEE_NAISSANCE > 60;
+
+Isbn des livres ayant déjà été empruntés par des usagers bénéficiant du tarif réduit :
+SELECT DISTINCT ISBN FROM LIVRE NATURAL JOIN PRET NATURAL JOIN USAGER WHERE TARIF_REDUIT = 1;
+(Ici, un natural join peut être utilisé puisque les noms des colonnes sont les mêmes)
+
+Informations de tous les usagers ayant actuellement emprunté un ou plusieurs livre(s) :
+SELECT DISTINCT(ID_USAGER), NOM, PRENOM, ANNEE_NAISSANCE, TARIF_REDUIT FROM USAGER NATURAL JOIN PRET WHERE DATE_RETOUR_EFFECTIVE IS NULL;
+
+Informations de tous les usagers ayant déjà rendu un ou plusieurs livre(s) en retard :
+SELECT DISTINCT(ID_USAGER), NOM, PRENOM, ANNEE_NAISSANCE, TARIF_REDUIT  FROM USAGER NATURAL JOIN PRET WHERE DATE_EMPRUNT + DUREE < DATE_RETOUR_EFFECTIVE OR (DATE_EMPRUNT + DUREE < SYSDATE AND DATE_RETOUR_EFFECTIVE IS NULL);
+
+
+Révisions APP11 :
+
+Requêtes :
+
+Nombre d’utilisateurs par année de naissance :
+SELECT ANNEE_NAISSANCE, COUNT(ID_USAGER) FROM USAGER GROUP BY ANNEE_NAISSANCE;
+
+Durée théorique (colonne « durée ») moyenne d’un prêt :
+SELECT AVG(DUREE) FROM PRET;
+
+Durée effective moyenne d’un prêt :
+SELECT AVG(DATE_RETOUR_EFFECTIVE - DATE_EMPRUNT) FROM PRET;
+
+Nombre de fois où chaque livre a été prêté. Les livres jamais prêtés devront être inclus dans le résultat final, avec la valeur « 0 » :
+SELECT LIVRE.ISBN, COUNT(PRET.ID_PRET) FROM LIVRE LEFT JOIN PRET ON PRET.ISBN = LIVRE.ISBN GROUP BY LIVRE.ISBN;
+
+Pour chaque livre, le nombre d’exemplaires actuellement en stock (= non empruntés) :
+SELECT LIVRE.ISBN, (NB_EXEMPLAIRES - COUNT(ID_PRET)) AS "NB_EXEMPLAIRES_ACTUEL"
+FROM LIVRE LEFT JOIN PRET ON LIVRE.ISBN = PRET.ISBN AND DATE_RETOUR_EFFECTIVE IS NULL AND ID_PRET IS NOT NULL
+GROUP BY LIVRE.ISBN, NB_EXEMPLAIRES ORDER BY LIVRE.ISBN;
+
+
+
+Modification de la BDD :
+
+Requête permettant de créer l’auteur/autrice de votre choix :
+INSERT INTO AUTEUR VALUES (20, 'Robillard', 'Anne');
+
+Requête permettant de créer un livre écrit par cet auteur/autrice :
+INSERT INTO LIVRE VALUES (1000000000030, 'The Knights of Emerald', 6, 354, 10, 20);
+
+Requête permettant de supprimer l’auteur/autrice que vous avez créé(e) :
+DELETE FROM AUTEUR WHERE ID_AUTEUR = 20;
+Erreur : L'auteur est utilisé dans un livre, on ne peut pas supprimer l'auteur. Il faut d'abord supprimer le livre lié à cet auteur pour pouvoir ensuite le supprimer.
+
+Supprimer maintenant l’auteur/autrice et le livre que vous avez créés :
+DELETE FROM LIVRE WHERE ID_AUTEUR = 20; (On supprime les livres liés à l'auteur que l'on voudra supprimer)
+DELETE FROM AUTEUR WHERE ID_AUTEUR = 20; (On supprime l'auteur une fois qu'il n'y a plus de livres lui correspondant)
