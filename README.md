@@ -37,6 +37,11 @@ If you use an IDE (IntelliJ, Eclipse) import the project as a simple Java projec
 
 ---
 
+### Important details
+- This project was created as part of a french CS course. That means that all comments and documentation are in french
+
+---
+
 ### Tips if something is missing
 - If SQL table creation scripts are not present, inspect dao code to reconstruct the schema (typical tables: Books, Users, Loans).  
 - If a main class is not obvious, search the ui folder for a class with a public static void main method.  
